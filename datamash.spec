@@ -4,12 +4,12 @@
 
 Summary:	A statistical, numerical and textual operations tool
 Name:		datamash
-Version:	1.6
-Release:	0.1
+Version:	1.8
+Release:	1
 License:	GPL v3+
 Group:		Applications
 Source0:	http://ftp.gnu.org/gnu/datamash/%{name}-%{version}.tar.gz
-# Source0-md5:	c3c243278a2f35de5ce988c844f8e240
+# Source0-md5:	b5f2dcfcefb2d41f88c54619b08727e3
 URL:		https://www.gnu.org/software/datamash/
 BuildRequires:	gettext-tools
 BuildRequires:	pkgconfig
@@ -70,10 +70,12 @@ rm -rf $RPM_BUILD_ROOT
 
 %files -f %{name}.lang
 %defattr(644,root,root,755)
-%doc AUTHORS ChangeLog NEWS README THANKS TODO examples
+%doc AUTHORS ChangeLog NEWS README THANKS examples
 %attr(755,root,root) %{_bindir}/datamash
+%attr(755,root,root) %{_bindir}/decorate
 %{_infodir}/datamash.info*
 %{_mandir}/man1/datamash.1*
+%{_mandir}/man1/decorate.1*
 
 %files -n bash-completion-datamash
 %defattr(644,root,root,755)
