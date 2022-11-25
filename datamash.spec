@@ -1,69 +1,80 @@
+#
+# Conditional build:
+%bcond_without	tests	# don't run tests
+
 Summary:	A statistical, numerical and textual operations tool
 Name:		datamash
 Version:	1.6
 Release:	0.1
 License:	GPL v3+
-URL:		https://www.gnu.org/software/datamash/
+Group:		Applications
 Source0:	http://ftp.gnu.org/gnu/datamash/%{name}-%{version}.tar.gz
-BuildRequires:	gcc
-BuildRequires:	gettext
-BuildRequires:	perl(Digest::MD5)
-BuildRequires:	perl(Digest::SHA)
-BuildRequires:	perl(Data::Dumper)
-BuildRequires:	perl(FileHandle)
-BuildRequires:	perl(File::Compare)
-BuildRequires:	perl(File::Find)
+# Source0-md5:	c3c243278a2f35de5ce988c844f8e240
+URL:		https://www.gnu.org/software/datamash/
+BuildRequires:	gettext-tools
 BuildRequires:	pkgconfig
-BuildRequires:	bash-completion
-Requires(preun):	info
-Requires(post):	info
+%if %{with tests}
+BuildRequires:	perl-base
+BuildRequires:	perl-modules
+BuildRequires:	rpm-build >= 4.6
+%endif
+BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
-GNU datamash is a command-line program which performs basic
-numeric,textual and statistical operations on input textual data
-files.
+GNU datamash is a command-line program which performs basic numeric,
+textual and statistical operations on input textual data files.
+
+%package -n bash-completion-datamash
+Summary:	Bash completion for datamash command line
+Group:		Applications/Shells
+Requires:	%{name} = %{version}-%{release}
+Requires:	bash-completion >= 1:2.0
+BuildArch:	noarch
+
+%description -n bash-completion-datamash
+Bash completion for datamash command line.
 
 %prep
-%autosetup -p 1
-# .UR not defined in el6 an macros
-%{?el6:sed -i -e 's/^.UR //g' datamash.1}
+%setup -q
 
 %build
-%configure
+%configure \
+	--with-bash-completion-dir="%{bash_compdir}"
+
 %{__make}
+
+%{?with_tests:%{__make} check}
 
 %install
 rm -rf $RPM_BUILD_ROOT
+
+install -d $RPM_BUILD_ROOT%{bash_compdir}
+
 %{__make} install \
 	DESTDIR=$RPM_BUILD_ROOT
-%{__rm} -f $RPM_BUILD_ROOT%{_infodir}/dir
-%find_lang %{name}
-%{__mkdir_p} $RPM_BUILD_ROOT%{compdir}
-%{__mv} $RPM_BUILD_ROOT%{_datadir}/datamash/bash-completion.d/datamash $RPM_BUILD_ROOT%{compdir}
-# E: non-executable-script %{bash_compdir}/datamash 644 /bin/bash
-%{__sed} -i '1d' $RPM_BUILD_ROOT%{compdir}/datamash
 
-%check
-%{__make} check
+%{__rm} -f $RPM_BUILD_ROOT%{_infodir}/dir
+
+%{__rm} -r $RPM_BUILD_ROOT%{_datadir}/%{name}/examples
+
+%find_lang %{name}
 
 %clean
 rm -rf $RPM_BUILD_ROOT
 
-%post
-/sbin/install-info %{_infodir}/%{name}.info %{_infodir}/dir || :
+%post	-p /sbin/postshell
+-/usr/sbin/fix-info-dir -c %{_infodir}
 
-%preun
-if [ $1 = 0 ];then
-/sbin/install-info –delete %{_infodir}/%{name}.info %{_infodir}/dir || :
-fi
+%postun	-p /sbin/postshell
+-/usr/sbin/fix-info-dir -c %{_infodir}
 
 %files -f %{name}.lang
 %defattr(644,root,root,755)
-%doc README NEWS THANKS TODO AUTHORS ChangeLog
+%doc AUTHORS ChangeLog NEWS README THANKS TODO examples
 %attr(755,root,root) %{_bindir}/datamash
-%{_datadir}/datamash/
-%{_infodir}/datamash.info.*
-%dir %{compdir}/..
-%dir %{compdir}
-%{compdir}/datamash
+%{_infodir}/datamash.info*
 %{_mandir}/man1/datamash.1*
+
+%files -n bash-completion-datamash
+%defattr(644,root,root,755)
+%{bash_compdir}/datamash
