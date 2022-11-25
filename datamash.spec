@@ -17,7 +17,6 @@ BuildRequires:	pkgconfig
 BuildRequires:	bash-completion
 Requires(preun):	info
 Requires(post):	info
-BuildArch:	noarch
 
 %description
 GNU datamash is a command-line program which performs basic
